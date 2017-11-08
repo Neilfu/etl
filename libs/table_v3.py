@@ -125,7 +125,7 @@ class TableModel(traitlets.HasTraits):
 
 
 #表格MVC之view
-class TableChart(widgets.VBox):
+class TableChart(widgets.Box):
   
     T_Table = Template( """<table class='rendered_html table'> 
                           <tr>
@@ -183,7 +183,7 @@ class TableChart(widgets.VBox):
         self.model = TableModel(header,body,pagesize)
         self.html = widgets.HTML() 
         self.actionBar()
-
+        self.layout = widgets.Layout(display='flex',flex_flow='column',align_items='stretch', width='100%')
         self.update()
         self.children = [self.html,self.action]
         #和model保持同步 Observer模型
