@@ -125,26 +125,31 @@ class TableModel(traitlets.HasTraits):
 
 
 #表格MVC之view
-class TableChart(widgets.Box):
-  
+class TableChart(widgets.VBox):
     T_Table = Template( """<table class='rendered_html table'> 
-                          <tr>
-                              {% for field in header %} <th>{{field}}</th>{% end %}
-                          </tr>  
-                          {% for row in data %} 
-                              <tr> 
-                                  {% for field in row %} 
-                                      <td> {{ field }} </td> 
-                                  {% end %}
-                              </tr> 
-                          {% end %} 
-                      </table>
-                  """
-                 ) 
-    _refresh_v = traitlets.Bool()    
+                              <tr>
+                                  {%
 
+                                  for idx,field in enumerate(header) %} <th  {% if (idx in colIdx) %} style="background-color:green;color:white" {% end %} >
+                                      {{field}}</th>{% end %}
+                              </tr>  
+                              {% for row in data  %} 
+                                  <tr> 
+                                      {% for idx,field in enumerate(row) %} 
+                                          <td {% if idx in colIdx %} style="background-color:green;color:white" {% end %} > {{ field }} </td> 
+                                      {% end %}
+                                  </tr> 
+                              {% end %} 
+                          </table>
+                      """
+                     )
+
+    _refresh_v = traitlets.Bool()
+    _col_index = traitlets.List()
+
+    @traitlets.observe('_col_index')
     def update(self,change=None):
-        table_html = self.T_Table.generate(header=self.model.header,data=self.model.page)
+        table_html = self.T_Table.generate(header=self.model.header,data=self.model.page,colIdx=self._col_index)
         self.html.value = table_html
         self.status.value = u'当前第%d页，共%d页' %(self.model.pos,self.model.pageTotal)
     
@@ -162,6 +167,13 @@ class TableChart(widgets.Box):
 
     def last(self,a):
         self.model.last()
+        
+    def colChoose(self,col=None):
+        idx = []
+        for i,field in enumerate(self.model.header):
+            if field in col:
+                idx.append(i)
+        self._col_index = idx
 
         
     def actionBar(self):
@@ -172,7 +184,6 @@ class TableChart(widgets.Box):
         self.status = widgets.HTML()
         self.action = widgets.HBox(layout=widgets.Layout(width="100%",display='flex-flow',flex_flow='row', justify_content='space-around'))  
         self.action.children = [self.status,self.btn_first,self.btn_previous,self.btn_back,self.btn_last]
-        #MVC之controller
         self.btn_first.on_click(self.first,False)
         self.btn_previous.on_click(self.previous,False)
         self.btn_back.on_click(self.back,False)   
@@ -183,9 +194,9 @@ class TableChart(widgets.Box):
         self.model = TableModel(header,body,pagesize)
         self.html = widgets.HTML() 
         self.actionBar()
-        self.layout = widgets.Layout(display='flex',flex_flow='column',align_items='stretch', width='100%')
+
         self.update()
         self.children = [self.html,self.action]
-        #和model保持同步 Observer模型
+        #refresh_link = traitlets.dlink((self.model,'_refresh'),(self,'_refresh_v'))
         self.model.observe(self.update,'_refresh')
          
