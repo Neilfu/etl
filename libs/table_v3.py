@@ -28,7 +28,7 @@ class TableModel(traitlets.HasTraits):
         if isinstance(pagesize, int) and (pagesize > 0):
             self._pagesize = pagesize
         else:
-            raise Exception('pagesuze must be a integer and >0') 
+            raise Exception('pagesize must be a integer and >0') 
         
         #self.initPara()
     
@@ -131,7 +131,7 @@ class TableChart(widgets.VBox):
                                   {%
 
                                   for idx,field in enumerate(header) %} <th  {% if (idx in colIdx) %} style="background-color:green;color:white" {% end %} >
-                                      {{field}}</th>{% end %}
+                                      <h3>{{field[1]}}</h3>{{field[0]}}</th>{% end %}
                               </tr>  
                               {% for row in data  %} 
                                   <tr> 
